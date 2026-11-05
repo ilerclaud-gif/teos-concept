@@ -1,0 +1,1954 @@
+/* TEOS — Concept. Макет 1440×800, сетка 6 × 220, gutter 16, поля 20 */
+
+@font-face {
+  font-family: "Bebas Neue Pro";
+  src: url("../fonts/BebasNeuePro-Regular.ttf") format("truetype");
+  font-weight: 400;
+  font-display: block;
+}
+@font-face {
+  font-family: "Bebas Neue Pro";
+  src: url("../fonts/BebasNeuePro-Bold.ttf") format("truetype");
+  font-weight: 700;
+  font-display: block;
+}
+
+:root {
+  --blue: #002bff;
+  --white: #ffffff;
+  --black: #030303;
+  --gray: #9a9a9a;
+  --line: rgb(255 255 255 / 0.13);
+
+  /* 1 пиксель макета: вписываем 1440×800 по меньшей стороне,
+     чтобы на широких экранах крупный шрифт не упирался в хедер */
+  --u: min(100vw / 1440, 100vh / 800);
+  /* горизонтальная единица: колонки сетки всегда тянутся на всю ширину */
+  --uw: calc(100vw / 1440);
+  --margin: calc(var(--uw) * 20);
+
+  --display: "Bebas Neue Pro", "Arial Narrow", sans-serif;
+  --serif: "Times New Roman", "Tinos", Times, serif;
+}
+
+*, *::before, *::after { box-sizing: border-box; }
+
+html, body { margin: 0; padding: 0; }
+
+html.lenis, html.lenis body { height: auto; }
+.lenis.lenis-smooth { scroll-behavior: auto !important; }
+.lenis.lenis-stopped { overflow: hidden; }
+
+body {
+  background: var(--black);
+  color: var(--white);
+  font-family: var(--serif);
+  -webkit-font-smoothing: antialiased;
+  text-rendering: geometricPrecision;
+}
+
+img { display: block; }
+button { font: inherit; color: inherit; background: none; border: 0; padding: 0; cursor: pointer; }
+
+/* ---------- Прелоадер ---------- */
+
+/* Контур рамки рисуется по мере загрузки; фон прозрачный — под ним
+   чёрная сцена Hero, на которой в это же время прорисовываются линии сетки */
+.loader {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  display: grid;
+  place-items: center;
+  pointer-events: none;
+}
+.loader__frame {
+  position: relative;
+  width: calc(var(--u) * 220);
+  height: calc(var(--u) * 356);
+  display: grid;
+  place-items: center;
+}
+.loader__rect {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+}
+.loader__rect rect {
+  fill: none;
+  stroke: var(--white);
+  stroke-width: 1;
+  stroke-dasharray: 1;
+  stroke-dashoffset: 1;
+  stroke-linecap: square;
+}
+.loader__word {
+  color: var(--blue);
+  font-family: var(--display);
+  font-size: calc(var(--u) * 64);
+  line-height: 1;
+  letter-spacing: 0.02em;
+  text-box: trim-both cap alphabetic;
+}
+.loader__count {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: calc(var(--u) * 14);
+  text-align: center;
+  font-family: var(--serif);
+  font-size: calc(var(--u) * 13);
+  line-height: 1;
+  letter-spacing: 0.08em;
+  color: var(--gray);
+  font-variant-numeric: tabular-nums;
+}
+
+/* До старта интро интерфейс Hero скрыт */
+.is-loading .title,
+.is-loading .title-deco,
+.is-loading .hdr,
+.is-loading .scroll-hint,
+.is-loading .hero__more,
+.is-loading .hero__front { visibility: hidden; }
+
+/* ---------- Hero ---------- */
+
+.hero {
+  position: relative;
+  /* высота задаётся из JS по длине сценария */
+  height: 1100vh;
+}
+
+/* sticky-сцена. Важно: внутри сцены у слоёв нет z-index,
+   порядок наложения задаётся порядком в DOM, чтобы exclusion
+   смешивался с видео-канвасом, а не с изолированной группой */
+.hero__stage {
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  height: 100lvh;
+  overflow: hidden;
+  background: var(--black);
+}
+
+.hero__video,
+.hero__front {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+.hero__front { pointer-events: none; }
+.hero__sparks {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  mix-blend-mode: screen;
+}
+
+.hero__grid-dark {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+}
+.hero__grid {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+  pointer-events: none;
+}
+/* Линии: тонкие, при прорисовке яркие, затем гаснут до 13% (как в ТЗ) */
+.hero__grid path {
+  fill: none;
+  stroke: var(--white);
+  stroke-width: 1;
+  stroke-opacity: 0.13;
+  stroke-dasharray: 1;
+  stroke-dashoffset: 1;
+}
+.hero__grid.is-drawn path {
+  stroke-dashoffset: 0;
+  transition: stroke-dashoffset 3s cubic-bezier(0.34, 0.22, 0.47, 0.84) var(--d, 0s);
+  animation: line-fade 4s ease-out var(--d, 0s) both;
+}
+@keyframes line-fade {
+  from { stroke-opacity: 0.75; }
+  to { stroke-opacity: 0.13; }
+}
+
+/* ---------- Шаг 1: TEOS ---------- */
+
+.title {
+  position: absolute;
+  left: var(--margin);
+  right: var(--margin);
+  bottom: calc(var(--u) * 21);
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  font-family: var(--display);
+  font-weight: 400;
+  font-size: calc(var(--u) * 598);
+  line-height: 1;
+  color: var(--white);
+  pointer-events: none;
+  user-select: none;
+}
+.title__l {
+  display: block;
+  overflow: hidden;
+  mix-blend-mode: exclusion;
+  text-box: trim-both cap alphabetic;
+  /* запас сверху и снизу: скругления O и S выходят за линию заглавных */
+  padding: 0.04em 0;
+  margin: -0.04em 0;
+}
+.title__l > span { display: block; }
+/* буквы рисует шейдер (js/renderer.js: над живописным фоном — белые, над героем — «исключение»); DOM-буквы — только вёрстка */
+.title.is-gl { color: transparent; }
+.title.is-gl .title__l { mix-blend-mode: normal; }
+/* оптическое выравнивание по краю буквы, а не по боковому отступу глифа:
+   перекладина T ровно уходит под плашку «Тот самый», S встаёт в поле 20 */
+.title__l:first-child { margin-left: -0.017em; }
+.title__l:last-child { margin-right: -0.026em; }
+
+.title-deco {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+/* «Тот самый» — плашка ложится на перекладину T */
+.tag {
+  position: absolute;
+  left: var(--margin);
+  /* плашка закрывает перекладину T целиком: 360–404 по макету */
+  bottom: calc(var(--u) * (800 - 404));
+  overflow: hidden;
+}
+.tag__in {
+  display: block;
+  /* по макету: плашка не выступает за перекладину T (верх 361.5, право 215), текст — чернила 28.5…203, базовая линия 394.8 */
+  padding: 0 calc(var(--u) * 12.3) 0 calc(var(--u) * 7.2);
+  background: var(--white);
+  color: var(--black);
+  font-family: var(--serif);
+  font-size: calc(var(--u) * 42);
+  line-height: calc(var(--u) * 39.3);
+  height: calc(var(--u) * 42.5);
+  letter-spacing: -0.03em;
+  white-space: nowrap;
+}
+
+.squiggle {
+  position: absolute;
+  /* привязка к центру, как и статуя в кадре */
+  left: calc(50% - var(--u) * (720 - 164));
+  bottom: calc(var(--u) * (800 - 263 - 448));
+  width: calc(var(--u) * 1121);
+  height: calc(var(--u) * 448);
+  overflow: visible;
+}
+
+/* ---------- Шаг 2: синяя плашка ---------- */
+
+.plaque {
+  position: absolute;
+  left: var(--margin);
+  top: calc(50% - var(--u) * 102);
+  width: calc(var(--u) * 456);
+  height: calc(var(--u) * 192);
+  padding: calc(var(--u) * 36) calc(var(--u) * 30) 0 calc(var(--u) * 35);   /* базовые линии строк — 368 / 408 / 448 */
+  background: var(--blue);
+  visibility: hidden;
+}
+.plaque__text {
+  margin: 0;
+  font-family: var(--serif);
+  font-size: calc(var(--u) * 42);
+  line-height: calc(var(--u) * 40);
+  letter-spacing: -0.03em;
+}
+.plaque__text em { font-style: italic; }
+
+/* общие строки с маской для появления */
+.line {
+  display: block;
+  overflow: hidden;
+  padding: 0.14em 0 0.08em;
+  margin: -0.14em 0 -0.08em;
+}
+.line > span { display: block; }
+/* блоки из таких строк — колонкой flex: у блочных соседей отрицательные поля схлопываются (брался только больший),
+   и шаг строк получался на 0,08em больше line-height; во flex поля складываются — шаг равен line-height, как в макете */
+.plaque__text, .headline, .deeper__title, .deeper__sub, .belok__title { display: flex; flex-direction: column; align-items: flex-start; }
+/* в «проплывающих» блоках строки движутся сами, маска строк не нужна */
+.plaque .line,
+.headline .line { overflow: visible; }
+
+/* ---------- Шаг 3: «И ещё кое-что.» ---------- */
+
+.headline {
+  position: absolute;
+  left: calc(var(--margin) - var(--u) * 8);   /* левый край букв — 19, как в макете */
+  margin: 0;
+  font-family: var(--display);
+  font-weight: 700;
+  font-size: calc(var(--u) * 171);
+  line-height: calc(var(--u) * 137);
+  letter-spacing: 0;
+  visibility: hidden;
+}
+/* базовые линии по макетам: «И ещё / кое-что.» — 392 / 529; «Густой / греческий / йогурт.» — 478 / 615 / 752 */
+.headline--awaken { top: calc(50% - var(--u) * 138); }
+.headline--cup { top: calc(50% - var(--u) * 52); }
+
+/* ---------- Шаг 5: «Загляни глубже.» в синей рамке ---------- */
+
+.deeper {
+  position: absolute;
+  left: calc(var(--uw) * 964);
+  right: var(--margin);
+  bottom: calc(var(--u) * 20);    /* рамка по макету: 964…1420 × 275…780 */
+  height: calc(var(--u) * 505);
+  visibility: hidden;
+}
+/* затемнение под текстом: блок лежит на запястье, нужен контраст */
+.deeper__veil {
+  position: absolute;
+  inset: 0;
+  background: rgb(3 3 3 / 0.42);
+  -webkit-backdrop-filter: blur(10px);
+  backdrop-filter: blur(10px);
+}
+.deeper__edge {
+  position: absolute;
+  background: var(--blue);
+}
+.deeper__edge--t, .deeper__edge--b { left: 0; right: 0; height: 2px; }
+.deeper__edge--l, .deeper__edge--r { top: 0; bottom: 0; width: 2px; }
+.deeper__edge--t { top: 0; transform-origin: 0 50%; }
+.deeper__edge--r { right: 0; transform-origin: 50% 0; }
+.deeper__edge--b { bottom: 0; transform-origin: 100% 50%; }
+.deeper__edge--l { left: 0; transform-origin: 50% 100%; }
+
+.deeper__title {
+  position: absolute;
+  left: calc(var(--u) * 30.1);
+  top: calc(var(--u) * 29);
+  margin: 0;
+  font-family: var(--display);
+  font-weight: 700;
+  font-size: calc(var(--u) * 96);
+  line-height: calc(var(--u) * 77);
+}
+.deeper__sub {
+  position: absolute;
+  left: calc(var(--u) * 30.1);
+  top: calc(var(--u) * 210.5);
+  margin: 0;
+  font-family: var(--serif);
+  font-size: calc(var(--u) * 22);
+  line-height: calc(var(--u) * 21);
+  letter-spacing: -0.03em;
+}
+.deeper__menu {
+  position: absolute;
+  left: calc(var(--u) * 29.8);
+  right: calc(var(--u) * 33);
+  bottom: calc(var(--u) * 24);
+  display: grid;
+}
+.deeper__menu a {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  color: var(--white);
+  text-decoration: none;
+  overflow: hidden;
+}
+.deeper__menu a span {
+  font-family: var(--display);
+  font-weight: 400;
+  font-size: calc(var(--u) * 35);
+  line-height: calc(var(--u) * 29);
+  letter-spacing: 0.01em;
+  /* hover через translate, а не transform: transform анимирует GSAP при появлении */
+  transition: translate 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+.deeper__menu a i {
+  font-family: var(--serif);
+  font-style: normal;
+  font-size: calc(var(--u) * 37);
+  line-height: calc(var(--u) * 29);
+  color: var(--gray);
+  transition: color 0.3s;
+}
+.deeper__menu a:hover span { translate: calc(var(--u) * 8) 0; }
+.deeper__menu a:hover i { color: var(--white); }
+
+.deeper__hint {
+  position: absolute;
+  right: calc(var(--u) * 32);     /* по макету: мышка 1371…1388 × 513…546, текст с 307 */
+  top: calc(var(--u) * 32);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: calc(var(--u) * 9.4);
+  color: var(--gray);
+}
+.deeper__hint span {
+  writing-mode: vertical-rl;
+  transform: rotate(180deg);
+  font-family: var(--serif);
+  font-size: calc(var(--u) * 14);
+  line-height: 1;
+  white-space: nowrap;
+}
+.deeper__hint img { width: calc(var(--u) * 17); height: auto; }
+
+/* закорючка над рамкой: выше слова «Загляни», чтобы не перечёркивать его */
+.squiggle--deeper {
+  left: calc(var(--u) * 185);
+  top: calc(var(--u) * -156);
+  bottom: auto;
+  width: calc(var(--u) * 448);
+  height: calc(var(--u) * 179);
+}
+
+/* ---------- Хедер ---------- */
+
+/* Общий для всего сайта. --ink — цвет линий и текста (белый на тёмных блоках,
+   тёмный на светлых), --inv — инверсия растровых значков и бургера */
+.hdr {
+  --ink: #ffffff;
+  --inv: 0;
+  position: fixed;
+  z-index: 30;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: calc(var(--u) * 88);
+  color: var(--ink);
+  pointer-events: none;
+  font-family: var(--serif);
+  /* по макету: Times 15 / 18, трекинг −3 % (так набраны все тексты Times в макетах), базовые линии строк — 55 и 73 */
+  font-size: calc(var(--u) * 15);
+  line-height: calc(var(--u) * 18);
+  letter-spacing: -0.03em;
+}
+.hdr__rule {
+  position: absolute;
+  left: var(--margin);
+  right: var(--margin);
+  background: var(--ink);
+  transform-origin: 0 50%;
+}
+.hdr__rule--thick { top: calc(var(--u) * 20); height: calc(var(--u) * 4); }
+.hdr__rule--thin { top: calc(var(--u) * 30); height: 1px; }
+.hdr__rule--bottom { top: calc(var(--u) * 87); height: 1px; }
+
+.hdr__logo {
+  position: absolute;
+  left: var(--margin);
+  top: calc(var(--u) * 45);
+  width: calc(var(--u) * 100);
+}
+.hdr__logo img { width: 100%; height: auto; }
+.hdr__logo, .hdr__menu { pointer-events: auto; }
+/* на светлых блоках — белая подложка, чтобы контент не проезжал сквозь текст хедера;
+   на тёмных (--inv: 0) её нет */
+.hdr::before {
+  content: '';
+  position: absolute;
+  inset: 0 0 calc(var(--u) * -1) 0;
+  background: rgb(255 255 255 / calc(var(--inv) * 0.86));
+  -webkit-backdrop-filter: blur(calc(var(--inv) * 8px));
+  backdrop-filter: blur(calc(var(--inv) * 8px));
+}
+/* на светлом фоне у белой плашки логотипа появляется тонкая рамка */
+.hdr__logo { box-shadow: 0 0 0 1px rgb(3 3 3 / var(--inv)); }
+.hdr__badges, .hdr__menu img { filter: invert(var(--inv)); }
+
+.hdr__kind,
+.hdr__vol {
+  position: absolute;
+  top: calc(var(--u) * 41);
+  margin: 0;
+}
+.hdr__kind { left: calc(var(--uw) * 256); font-weight: 700; }
+.hdr__vol { left: calc(var(--uw) * 964); }
+
+.hdr__badges {
+  position: absolute;
+  left: calc(var(--uw) * 1103);
+  top: calc(var(--u) * 45);
+  width: calc(var(--u) * 81);
+  height: auto;
+}
+.hdr__menu {
+  position: absolute;
+  right: var(--margin);
+  top: calc(var(--u) * 45);
+  width: calc(var(--u) * 45);
+}
+.hdr__menu img { width: 100%; height: auto; }
+
+/* ---------- Подсказка «Листай вниз» ---------- */
+
+.scroll-hint {
+  position: absolute;
+  left: var(--margin);
+  bottom: calc(var(--u) * 20);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: calc(var(--u) * 10);
+  color: var(--gray);
+}
+.scroll-hint__text {
+  writing-mode: vertical-rl;
+  transform: rotate(180deg);
+  font-family: var(--serif);
+  font-size: calc(var(--u) * 14);
+  line-height: 1;
+  white-space: nowrap;
+}
+.scroll-hint__mouse { width: calc(var(--u) * 17); height: auto; }
+
+/* кнопка «Заглянуть глубже.» (макет 01-start2): 173…393 × 747…780, белая; устройство и наведение — как у «Все рецепты.» */
+.hero__more {
+  position: absolute;
+  left: calc(var(--uw) * 173);
+  bottom: calc(var(--u) * 20);
+  width: calc(var(--u) * 220);
+  height: calc(var(--u) * 33);
+  color: var(--white);
+  text-decoration: none;
+  overflow: hidden;
+}
+.hero__more-word {
+  position: absolute;
+  left: calc(var(--u) * 1.6);
+  top: calc(var(--u) * -2.8);
+  display: inline-flex;
+  font-family: var(--serif);
+  font-style: italic;
+  font-weight: 700;
+  font-size: calc(var(--u) * 22);     /* макет: Times 22, трекинг −3 % */
+  letter-spacing: -0.04em;            /* буквы — отдельные элементы (кернинг между ними не работает): чуть плотнее, чтобы ширина вышла как в макете */
+  line-height: 1;
+  white-space: pre;
+}
+.hero__more .ch { display: inline-block; transition: transform var(--dur, 300ms) ease var(--delay, 0ms); }
+.hero__more.is-hovered .ch { transform: translateX(var(--move, 0px)); }
+.hero__more-arrow {
+  position: absolute;
+  top: calc(var(--u) * 0.5);
+  width: calc(var(--u) * 18);
+  height: calc(var(--u) * 16);
+}
+.hero__more-arrow--right { right: calc(var(--u) * -0.5); }
+.hero__more-arrow--left { left: 0; opacity: 0; transform: translateX(-120%); }
+.hero__more-arrow svg { display: block; width: 100%; height: 100%; overflow: visible; }
+.hero__more-arrow path { fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: square; }
+.hero__more-line {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: calc(var(--u) * 2);
+  background: currentColor;
+}
+.hero__more-line--right { transform-origin: right center; }
+.hero__more-line--left { transform-origin: left center; transform: scaleX(0); }
+.hero__more:focus-visible { outline: calc(var(--u) * 2) solid var(--white); outline-offset: calc(var(--u) * -3); }
+
+/* ---------- Блок 2: Белок ---------- */
+
+/* обычный скролл; размеры от ширины (как макет 1440) */
+.belok {
+  position: relative;
+  /* глубоко наезжает на конец Hero: когда погружение ушло в белое (≈1880), верх блока
+     уже у середины экрана — контент появляется сразу, без пустого белого экрана */
+  margin-top: -160vh;
+  /* пока блок въезжает, своего фона и сетки нет: контент едет по белому фону с сеткой
+     из сцены Hero; когда верх блока дошёл до верха экрана — включаются свои (то же место) */
+  background: transparent;
+  color: var(--black);
+}
+/* свой фон блоку не нужен: белый с сеткой рисует фоновый канвас */
+
+/* лист «Белок» лежит над фоновым канвасом */
+.belok { z-index: 2; }
+
+/* Фон блоков после Hero (белый с сеткой, синий…) и переходы «прожигом» рисует
+   фиксированный канвас; он включается, когда «Белок» дошёл до верха экрана —
+   до этого под блоком белая сцена Hero с той же сеткой */
+.bgfx {
+  position: fixed;
+  inset: 0;
+  z-index: 1;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  visibility: hidden;
+}
+.bgfx.is-on { visibility: visible; }
+/* прожиг поверх предыдущего блока (лукбук закрыт DOM): над ним, но под следующим блоком и хедером */
+.bgfx--over { z-index: 5; }   /* прожиг-оверлей поверх предыдущего блока (сейчас не используется) */
+
+/* сетка стоит на месте, пока едет весь блок */
+.belok__lines {
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  margin-bottom: -100vh;
+  pointer-events: none;
+  visibility: hidden; /* сетку рисует фоновый канвас; слой оставлен для отладки */
+}
+.belok__lines img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.belok__intro {
+  position: relative;
+  height: calc(var(--uw) * 940);
+}
+.belok__art {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: auto;
+  overflow: visible;
+  pointer-events: none;
+}
+.belok__art .marquee text {
+  font-family: var(--serif);
+  font-size: 42px;
+  letter-spacing: -0.03em;   /* как в макете: фраза занимает 629 ед. (без трекинга — 674) */
+}
+.belok__art .marquee--ink text { fill: var(--black); }
+.belok__art .marquee--paper text { fill: var(--white); }
+.belok__art .eight-reel text {
+  font-family: var(--display);
+  font-weight: 700;
+  font-size: 600px;          /* цифра макета: 206.5 × 432 ед. */
+}
+.belok__art .eight-reel--ink text { fill: var(--blue); }
+
+.belok__title {
+  position: absolute;
+  /* по макету: Bebas 96 / 77, левый край букв — 23 и 21, базовые линии — 223 и 300 */
+  left: calc(var(--margin) - var(--uw) * 0.2);
+  top: calc(var(--uw) * 150.2);
+  margin: 0;
+  font-family: var(--display);
+  font-weight: 700;
+  font-size: calc(var(--uw) * 96);
+  line-height: calc(var(--uw) * 77);
+  text-box: trim-both cap alphabetic;
+}
+/* строки появляются сдвигом и проявлением — маска не нужна (она срезала хвосты «у», «д») */
+.belok__title .line { overflow: visible; }
+
+.belok__args {
+  position: relative;
+  display: grid;
+  /* короткий хвост: синий прожигает почти сразу после пятого аргумента (автор попросил сократить) */
+  padding-bottom: calc(var(--uw) * 120);
+}
+.belok__aside,
+.belok__list { grid-area: 1 / 1; }
+
+/* правая колонка закреплена у низа экрана (отступ как поле сетки), пока идут аргументы;
+   --aside-h — её высота, считается в JS */
+.belok__aside {
+  position: sticky;
+  top: calc(100vh - var(--aside-h, 270px) - var(--uw) * 20);
+  align-self: start;
+  justify-self: end;
+  margin: calc(var(--uw) * 16.2) var(--margin) 0 0;
+  text-align: right;
+  z-index: 1;
+}
+/* по макету: Times 22 / 21, трекинг −3 %, базовые линии 974 / 995; верх заглавных заголовка — 1003 */
+.belok__note {
+  margin: 0 0 calc(var(--uw) * 4.8);
+  font-family: var(--serif);
+  font-size: calc(var(--uw) * 22);
+  line-height: calc(var(--uw) * 21);
+  letter-spacing: -0.03em;
+}
+.belok__heading {
+  margin: 0;
+  font-family: var(--display);
+  font-weight: 700;
+  font-size: calc(var(--uw) * 96);          /* макет: Bebas 96 / 77, базовые линии 1070 / 1147 / 1224 */
+  line-height: calc(var(--uw) * 77);
+  text-box: trim-both cap alphabetic;
+}
+
+/* аргументы: «барабан» — каждая строка поворачивается к зрителю у центра экрана */
+.belok__list {
+  list-style: none;
+  margin: 0;
+  padding: calc(var(--uw) * 212.6) 0 0;
+  /* сильнее, чем у референса (700vw): наклон строк выше/ниже центра заметнее;
+     точку перспективы (центр экрана) ставит JS */
+  perspective: 170vw;
+  text-align: center;
+}
+/* --fade (0…1, JS): к краям экрана строка сереет и растворяется в фоне */
+.belok__list li {
+  margin-bottom: calc(var(--uw) * 85.3);   /* шаг аргументов 151 (с двумя строками текста — 172), как в макете */
+  opacity: calc(1 - var(--fade, 0) * 0.85);
+  will-change: transform, opacity;
+}
+.belok__list li:last-child { margin-bottom: 0; }
+/* по макету: заголовок Times 41 (жирный курсив, трекинг −2 %), текст Times 22 / 21 (−3 %); между базовыми линиями — 29.2 */
+.belok__list h3 {
+  margin: 0 0 calc(var(--uw) * 4.7);
+  font-family: var(--serif);
+  font-style: italic;
+  font-weight: 700;
+  font-size: calc(var(--uw) * 41);
+  line-height: calc(var(--uw) * 40);
+  letter-spacing: -0.02em;
+  color: color-mix(in srgb, var(--blue) calc(100% - var(--fade, 0) * 100%), #a6a6a6);
+}
+.belok__list p {
+  margin: 0;
+  font-family: var(--serif);
+  font-size: calc(var(--uw) * 22);
+  line-height: calc(var(--uw) * 21);
+  letter-spacing: -0.03em;
+  color: color-mix(in srgb, var(--black) calc(100% - var(--fade, 0) * 100%), #a6a6a6);
+}
+
+/* ---------- Блок 3: Вкусы (синий) ---------- */
+
+/* фон (синий) рисует канвас .bgfx; блок прозрачный, над канвасом */
+.vkusy {
+  position: relative;
+  z-index: 2;
+  background: transparent;
+  color: var(--white);
+  /* высота кадра макета 1440×1526 */
+  --stage-h: calc(var(--uw) * 1526);
+}
+
+/* фоновые линии (макет: белые; 20 % — решение автора): стоят на месте поверх контента всего блока */
+.vkusy__lines {
+  position: sticky;
+  top: 0;
+  z-index: 6;
+  height: 100vh;
+  margin-bottom: -100vh;
+  pointer-events: none;
+  opacity: 0.2;
+}
+.vkusy__lines img { width: 100%; height: 100%; object-fit: cover; display: block; }
+/* пока блок въезжает, линии рисует фоновый канвас (по всему синему, вместе с прожигом) — свои скрыты */
+.vkusy.is-entering .vkusy__lines { visibility: hidden; }
+
+/* экран вступления стоит (sticky) всё время сценария; кадр макета внутри двигает JS:
+   едет до «характеров.» + баночки → стоит (разлёт) → едет, пока голова не встанет на экран целиком →
+   стоит (отклеивание). Высоту .vkusy__intro (длину сценария) задаёт JS */
+.vkusy__intro {
+  position: relative;
+  height: calc(var(--stage-h) + 300vh);
+}
+.vkusy__stage {
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  overflow: clip;
+}
+.vkusy__frame {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: var(--stage-h);
+  will-change: transform;
+}
+
+.vkusy__title { margin: 0; font-weight: 700; }
+.vkusy__word,
+.vkusy__sub {
+  position: absolute;
+  left: 0;
+  width: 100%;
+  text-align: center;
+  white-space: nowrap;
+  z-index: 1;
+}
+.vkusy__word {
+  font-family: var(--display);
+  font-weight: 700;
+  line-height: 1;
+  text-box: trim-both cap alphabetic;
+}
+/* размеры и положения сняты с макета (единицы макета 1440): кегль 356 — по ширине надписей,
+   top — линия заглавных (text-box: trim cap); сдвиг по x — оптический центр как в макете */
+.vkusy__word--1 { top: calc(var(--uw) * 133); left: calc(var(--uw) * 6.6); font-size: calc(var(--uw) * 356); }
+.vkusy__word--2 { top: calc(var(--uw) * 453); left: calc(var(--uw) * 6.2); font-size: calc(var(--uw) * 356); }
+/* по макету: Times 42 / 40, трекинг −3 %, базовые линии строк — 441 и 481 */
+.vkusy__sub {
+  top: calc(var(--uw) * 413.3);
+  left: calc(var(--uw) * 2);
+  margin: 0;
+  font-family: var(--serif);
+  font-size: calc(var(--uw) * 42);
+  line-height: calc(var(--uw) * 40);
+  letter-spacing: -0.03em;
+  text-box: trim-both cap alphabetic;
+}
+.vkusy__sub em { font-style: italic; }
+/* буквы разлетаются по отдельности */
+.vkusy [data-split] .ch { display: inline-block; will-change: transform; }
+
+/* облака вокруг головы (tools/oblaka.swift): за головой, поверх слов; плывут влево-вправо — у каждого свой размах и период */
+.vkusy__cloud {
+  position: absolute;
+  z-index: 1;
+  height: auto;
+  pointer-events: none;
+  animation: vk-cloud var(--t, 18s) ease-in-out var(--d, 0s) infinite alternate;
+  will-change: translate;
+}
+@keyframes vk-cloud {
+  from { translate: calc(var(--uw) * var(--a, 40) * -1) 0; }
+  to { translate: calc(var(--uw) * var(--a, 40)) 0; }
+}
+.vkusy__cloud--1 { left: calc(var(--uw) * 120); top: calc(var(--uw) * 930); width: calc(var(--uw) * 500); --a: 110; --t: 13s; }
+.vkusy__cloud--2 { left: calc(var(--uw) * 850); top: calc(var(--uw) * 1085); width: calc(var(--uw) * 640); --a: -140; --t: 16s; --d: -5s; }
+.vkusy__cloud--3 { left: calc(var(--uw) * 1010); top: calc(var(--uw) * 850); width: calc(var(--uw) * 300); --a: 170; --t: 11s; --d: -3s; opacity: 0.92; }
+.vkusy__cloud--4 { left: calc(var(--uw) * 150); top: calc(var(--uw) * 790); width: calc(var(--uw) * 230); --a: -120; --t: 14s; --d: -8s; opacity: 0.8; scale: -1 1; }
+@media (prefers-reduced-motion: reduce) { .vkusy__cloud { animation: none; } }
+
+/* голова: задний слой (с белой изнанкой) и передний (лицо, кудри, рваная кромка); между ними — баночки */
+.vkusy__head {
+  position: absolute;
+  left: calc(var(--uw) * 405.3);
+  top: calc(var(--uw) * 801.4);
+  width: calc(var(--uw) * 631.4);
+  height: auto;
+  pointer-events: none;
+}
+.vkusy__head--back { z-index: 2; }
+.vkusy__head--front { z-index: 4; filter: drop-shadow(0 calc(var(--uw) * -4) calc(var(--uw) * 7) rgb(0 5 46 / 0.5)); }
+
+/* баночка: точка — центр (left/top из JS), полёт — transform (GSAP), «толкание» — у картинки внутри */
+.vk-jar {
+  position: absolute;
+  z-index: 3;
+  width: 0;
+  height: 0;
+  will-change: transform;
+}
+.vk-jar img {
+  position: absolute;
+  left: 0;
+  top: 0;
+  translate: -50% -50%;
+  display: block;
+  max-width: none;
+}
+/* отклеивание головы: холст поверх головы, видим только на этой фазе (JS) */
+.vkusy__peel {
+  position: absolute;
+  left: 0;
+  z-index: 4;
+  width: 100%;
+  pointer-events: none;
+  visibility: hidden;
+}
+
+/* ---------- Блок 3: лукбук «Семь характеров» ---------- */
+
+/* размеры — от --u (кадр макета 1440×800 вписан в экран), отступ слева — поле сетки;
+   кадр 800u в каждой карточке стоит по центру экрана по высоте */
+.lb { position: relative; --box-top: calc((100vh - var(--u) * 800) / 2); }
+
+/* фото: фиксированный слой на правую половину, стопкой; шторки и масштаб — JS */
+.lb__photos {
+  position: fixed;
+  top: 0;
+  right: 0;
+  z-index: 1;
+  width: 50vw;
+  height: 100vh;
+  pointer-events: none;
+  visibility: hidden;
+}
+.lb.is-on .lb__photos,
+.lb.is-on .lb__phrases { visibility: visible; }
+.lb__photo {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  clip-path: inset(100% 0 0 0);
+  background: #0c0c0c;
+}
+.lb__photo img {
+  position: absolute;
+  max-width: none;
+  transform-origin: 50% 50%;
+  will-change: transform;
+}
+
+/* карточки: по экрану на вкус; левая половина — панель цвета вкуса */
+.lb__cards { position: relative; z-index: 2; }
+.lb__card {
+  position: relative;
+  height: 100vh;
+}
+.lb__panel {
+  position: relative;
+  width: 50vw;
+  height: 100%;
+  background: var(--c);
+}
+.lb__box {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: var(--box-top);
+  height: calc(var(--u) * 800);
+  will-change: opacity;
+}
+
+/* шапка карточки прижата к низу: последняя строка названия всегда на одной высоте (базовая линия 323.5) */
+.lb__head {
+  position: absolute;
+  left: var(--margin);
+  bottom: calc(var(--u) * 476.5);
+  margin: 0;
+}
+.lb__num,
+.lb__goddess,
+.lb__name { margin: 0; text-box: trim-both cap alphabetic; }
+.lb__num {
+  margin-bottom: calc(var(--u) * 13.4);
+  font-family: var(--serif);
+  font-weight: 700;
+  font-size: calc(var(--u) * 15);       /* макет: Times 15 (жирный), трекинг −3 % — как в шапке */
+  letter-spacing: -0.03em;
+  line-height: 1;
+  opacity: 0.38;
+}
+/* по макету: Times 35 (курсив), трекинг −3 %, базовая линия 234.8 */
+.lb__goddess {
+  margin-bottom: calc(var(--u) * 21.5);
+  font-family: var(--serif);
+  font-style: italic;
+  font-size: calc(var(--u) * 35);
+  letter-spacing: -0.03em;
+  line-height: 1;
+}
+.lb__name {
+  margin-left: calc(var(--u) * -3.9);   /* левый край букв — ровно по полю 20, как в макете */
+  font-family: var(--display);
+  font-weight: 700;
+  font-size: calc(var(--u) * 96);
+  line-height: 0.8;
+}
+.lb__sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); }
+
+/* рамка с кнопкой и данными */
+.lb__frame {
+  position: absolute;
+  left: var(--margin);
+  top: calc(var(--u) * 359);
+  width: calc(var(--u) * 456);
+  height: calc(var(--u) * 421);
+  border: calc(var(--u) * 2) solid var(--white);
+}
+
+/* «Купить.»: белая плашка, баночка выходит за неё вверх; без ссылки (концепт) */
+.lb__buy {
+  position: absolute;
+  left: calc(var(--u) * 28);
+  top: calc(var(--u) * 28);
+  width: calc(var(--u) * 396);
+  height: calc(var(--u) * 90);
+  background: var(--white);
+  color: var(--black);
+  text-decoration: none;
+  cursor: pointer;
+}
+.lb__jar {
+  position: absolute;
+  left: calc(var(--u) * 27);
+  top: calc(var(--u) * -18);
+  width: calc(var(--u) * 149);
+  height: auto;
+  /* мягкая тень вправо-вниз, как в макете */
+  filter: drop-shadow(calc(var(--u) * 16) calc(var(--u) * 18) calc(var(--u) * 16) rgb(0 0 30 / 0.42));
+  transition: translate 0.5s cubic-bezier(.2, .8, .2, 1), rotate 0.5s cubic-bezier(.2, .8, .2, 1), filter 0.5s ease;
+}
+.lb__buy .roll {
+  position: absolute;
+  /* по макету: Times 35 (жирный курсив), трекинг −3 %; чернила 277…397.5, базовая линия 446 */
+  right: calc(var(--u) * 45.2);
+  top: calc(var(--u) * 27.9);
+  font-family: var(--serif);
+  font-style: italic;
+  font-weight: 700;
+  font-size: calc(var(--u) * 35);
+  letter-spacing: -0.03em;
+  line-height: 1;
+}
+/* наведение: баночка приподнимается и наклоняется, тень растёт; буквы «Купить.» перекатываются (как ENTER) */
+.lb__buy:hover .lb__jar,
+.lb__buy:focus-visible .lb__jar {
+  translate: 0 calc(var(--u) * -8);
+  rotate: -5deg;
+  filter: drop-shadow(calc(var(--u) * 22) calc(var(--u) * 28) calc(var(--u) * 22) rgb(0 0 30 / 0.36));
+}
+.lb__buy .roll__ch { position: relative; display: inline-block; overflow: hidden; vertical-align: top; padding: 0 0.04em; margin: 0 -0.04em; }
+.lb__buy .roll__a,
+.lb__buy .roll__b {
+  display: block;
+  transition: translate 0.45s cubic-bezier(.6, 0, .2, 1);
+  transition-delay: calc(var(--i) * 28ms);
+}
+.lb__buy .roll__b { position: absolute; left: 0.04em; top: 100%; }
+.lb__buy:hover .roll__a,
+.lb__buy:hover .roll__b,
+.lb__buy:focus-visible .roll__a,
+.lb__buy:focus-visible .roll__b { translate: 0 -100%; }
+.lb__buy:focus-visible { outline: calc(var(--u) * 2) solid var(--black); outline-offset: calc(var(--u) * -6); }
+
+/* рукописное «КБЖУ» на правой стороне рамки (рисуется маской из штрихов, JS) */
+.lb__kbzhu {
+  position: absolute;
+  left: calc(var(--u) * 398);
+  top: calc(var(--u) * 121);
+  width: calc(var(--u) * 85);
+  height: auto;
+  overflow: visible;
+}
+.lb__kbzhu mask path { fill: none; stroke: #fff; stroke-width: 8; stroke-linecap: round; stroke-linejoin: round; }
+
+/* данные: значение — отточие — подпись */
+.lb__facts {
+  position: absolute;
+  left: calc(var(--u) * 28);
+  right: calc(var(--u) * 28);
+  top: calc(var(--u) * 240.5);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+/* строка: верх = линия заглавных значения (text-box trim), шаг 39 */
+.lb__fact {
+  display: flex;
+  align-items: baseline;
+  height: calc(var(--u) * 39);
+}
+.lb__val {
+  font-family: var(--display);
+  font-weight: 700;
+  font-size: calc(var(--u) * 36);
+  line-height: 1;
+  text-box: trim-both cap alphabetic;
+  white-space: nowrap;
+}
+/* отточие — по макету: точки 2 × 2 с шагом 6, на 1 выше базовой линии; первая — через 5 после значения */
+.lb__dots {
+  position: relative;
+  top: calc(var(--u) * -0.6);
+  flex: 1;
+  align-self: baseline;
+  height: calc(var(--u) * 2);
+  margin: 0 calc(var(--u) * 4) 0 calc(var(--u) * 3);
+  background: radial-gradient(circle calc(var(--u) * 1.15) at 50% 50%, currentColor 82%, transparent 100%) left bottom / calc(var(--u) * 6) calc(var(--u) * 2) repeat-x;
+}
+.lb__lab {
+  font-family: var(--serif);
+  position: relative;
+  top: calc(var(--u) * -1);           /* в макете подпись на 1 выше базовой линии значения */
+  font-size: calc(var(--u) * 21.5);   /* макет: Times ≈ 21.5, трекинг −2 % */
+  letter-spacing: -0.02em;
+  line-height: 1;
+  white-space: nowrap;
+}
+
+/* фраза-характер: по центру экрана на линии раздела, сменяется побуквенным перекатом (JS) */
+.lb__phrases {
+  position: fixed;
+  left: 0;
+  top: 0;
+  z-index: 3;
+  width: 100vw;
+  height: 100vh;
+  pointer-events: none;
+  visibility: hidden;
+}
+.lb__phrase {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  translate: -50% -50%;
+  margin: 0;
+  text-align: center;
+  white-space: nowrap;
+  font-family: var(--serif);
+  font-weight: 700;
+  font-size: calc(var(--u) * 35);     /* макет: Times 35 (жирный) / 34, трекинг −3 %, базовые линии 378 / 412 / 446 */
+  line-height: calc(var(--u) * 34);
+  letter-spacing: -0.03em;
+  visibility: hidden;
+}
+.lb__pline { display: block; }
+.lb__phrase .roll__ch {
+  display: inline-block;
+  overflow: hidden;
+  vertical-align: top;
+  /* окно буквы с запасом сверху (ё, й) и снизу (у, р) */
+  padding: 0.18em 0.02em 0.22em;
+  margin: -0.18em -0.02em -0.22em;
+}
+.lb__phrase .roll__a { display: inline-block; will-change: transform; }
+
+/* ---------- Блок 4: Рецепты ---------- */
+
+/* фон (белый с сеткой) — канвас .bgfx; блок выше оверлея прожига */
+.rc {
+  position: relative;
+  z-index: 4;
+  color: var(--black);
+}
+/* сценарий: экран стоит (sticky) 5.5 экрана — PIN_S в recepty.js */
+.rc__pin { position: relative; height: 650vh; }
+.rc__stage {
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  overflow: clip;
+}
+.rc__gl {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}
+/* кадр макета 1440×800, вписан в экран (--u), по центру */
+.rc__frame {
+  position: absolute;
+  left: calc(50vw - var(--u) * 720);
+  top: calc(50vh - var(--u) * 400);
+  width: calc(var(--u) * 1440);
+  height: calc(var(--u) * 800);
+  pointer-events: none;
+}
+.rc__frame--ui { z-index: 2; }
+.rc__title { margin: 0; font-weight: 700; }
+.rc__line {
+  position: absolute;
+  left: 0;
+  width: 100%;
+  text-align: center;
+  white-space: nowrap;
+  font-family: var(--display);
+  font-weight: 700;
+  font-size: calc(var(--u) * 171);   /* макет: Bebas 171, как «Густой греческий йогурт.» на первом экране */
+  line-height: 1;
+  text-transform: uppercase;
+  will-change: transform;
+}
+.rc__word { display: inline-block; }
+/* top — базовая линия минус её высота в строке (0,859 кегля при line-height 1); базовые линии с макета: 298 и 623 */
+.rc__line--1 { top: calc(var(--u) * (298 - 171 * 0.859)); }
+.rc__line--2 { top: calc(var(--u) * (623 - 171 * 0.859)); }
+.rc__sub {
+  position: absolute;
+  left: 0;
+  width: 100%;
+  /* по макету: Times 35 / 34, трекинг −3 %, базовые линии 395 и 429 */
+  top: calc(var(--u) * 366.3);
+  margin: 0;
+  text-align: center;
+  font-family: var(--serif);
+  font-size: calc(var(--u) * 35);
+  line-height: calc(var(--u) * 34);
+  letter-spacing: -0.03em;
+}
+
+/* сетка рецептов (финал): карточки по колонкам макета, над ними названия */
+.rc__grid { margin: 0; padding: 0; list-style: none; }
+.rc__card {
+  position: absolute;
+  width: calc(var(--u) * 220);
+  height: calc(var(--u) * 146.7);
+  visibility: hidden;
+  pointer-events: none;
+}
+.rc.is-grid .rc__card { visibility: visible; pointer-events: auto; }
+.rc__open {
+  display: block;
+  width: 100%;
+  height: 100%;
+  padding: 0;
+  border: 0;
+  background: #111;
+  cursor: pointer;
+  overflow: hidden;
+}
+.rc__open img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: scale 0.7s cubic-bezier(.2, .8, .2, 1);
+}
+.rc__open:hover img,
+.rc__open:focus-visible img { scale: 1.07; }
+.rc__open:focus-visible { outline: calc(var(--u) * 2) solid var(--blue); outline-offset: calc(var(--u) * 3); }
+.rc__name {
+  position: absolute;
+  left: 0;
+  bottom: calc(100% + var(--u) * 18);
+  margin: 0;
+  font-family: var(--display);
+  font-weight: 700;
+  font-size: calc(var(--u) * 36);
+  line-height: 1;
+  text-box: trim-both cap alphabetic;
+  white-space: nowrap;
+  pointer-events: none;
+}
+/* перекат букв названия при наведении на карточку (как «Купить.») */
+.rc__name .roll__ch { position: relative; display: inline-block; overflow: hidden; vertical-align: top; padding: 0.06em 0.03em; margin: -0.06em -0.03em; }
+.rc__name .roll__a,
+.rc__name .roll__b { display: block; transition: translate 0.45s cubic-bezier(.6, 0, .2, 1); transition-delay: calc(var(--i) * 22ms); }
+.rc__name .roll__b { position: absolute; left: 0.03em; top: calc(100% - 0.06em); }
+.rc__card:hover .roll__a,
+.rc__card:hover .roll__b,
+.rc__card:focus-within .roll__a,
+.rc__card:focus-within .roll__b { translate: 0 calc(-100% - 0.06em); }
+
+/* подсказка: синий квадрат с рукой (зацикленный «клик») и текст */
+.rc__hint {
+  position: absolute;
+  left: calc(var(--u) * 728);
+  top: calc(var(--u) * 748);
+  display: flex;
+  align-items: flex-start;
+  opacity: 0;
+}
+.rc__hand {
+  position: relative;
+  width: calc(var(--u) * 31.5);
+  height: calc(var(--u) * 31.5);
+  background: var(--blue);
+}
+.rc__hand img {
+  position: absolute;
+  left: calc(var(--u) * -7.4);
+  top: calc(var(--u) * -1);
+  width: calc(var(--u) * 51);
+  max-width: none;
+  filter: drop-shadow(calc(var(--u) * 3) calc(var(--u) * 4) calc(var(--u) * 4) rgb(0 0 0 / 0.25));
+  transform-origin: 40% 20%;
+  animation: rc-click 1.8s cubic-bezier(.4, 0, .2, 1) infinite;
+}
+@keyframes rc-click {
+  0%, 30%, 100% { translate: 0 0; scale: 1; }
+  42% { translate: calc(var(--u) * 1.5) calc(var(--u) * 2.5); scale: 0.88; }
+  56% { translate: 0 0; scale: 1; }
+}
+.rc__hand::after {
+  /* «волна» от нажатия */
+  content: '';
+  position: absolute;
+  left: calc(var(--u) * 8);
+  top: calc(var(--u) * 7);
+  width: calc(var(--u) * 10);
+  height: calc(var(--u) * 10);
+  border: calc(var(--u) * 1.5) solid rgb(255 255 255 / 0.9);
+  border-radius: 50%;
+  opacity: 0;
+  animation: rc-ripple 1.8s ease-out infinite;
+}
+@keyframes rc-ripple {
+  0%, 40% { opacity: 0; scale: 0.3; }
+  44% { opacity: 1; scale: 0.4; }
+  75%, 100% { opacity: 0; scale: 1.6; }
+}
+/* по макету: Times 15 / 14, трекинг −3 %, левый край 768, базовые линии 762 и 776 */
+.rc__hint p {
+  margin: calc(var(--u) * 2.1) 0 0 calc(var(--u) * 8.3);
+  font-family: var(--serif);
+  font-size: calc(var(--u) * 15);
+  line-height: calc(var(--u) * 14);
+  letter-spacing: -0.03em;
+}
+
+/* описание и кнопка — у полей экрана, по низу кадра */
+.rc__desc,
+.rc__all {
+  position: absolute;
+  bottom: calc(50vh - var(--u) * 400 + var(--u) * 20);
+  z-index: 2;
+  opacity: 0;
+  translate: 0 calc(var(--u) * 24);
+  transition: opacity 0.9s ease, translate 0.9s cubic-bezier(.2, .8, .2, 1);
+}
+/* появляются, когда блок въезжает (как FadeInOnScroll у trionn) */
+.rc.is-in .rc__desc,
+.rc.is-in .rc__all { opacity: 1; translate: 0 0; }
+/* по макету: Times 18 / 17, трекинг −3 %, базовая линия последней строки — 778 */
+.rc__desc {
+  left: var(--margin);
+  bottom: calc(50vh - var(--u) * 400 + var(--u) * 19.4);
+  margin: 0;
+  font-family: var(--serif);
+  font-size: calc(var(--u) * 18);
+  line-height: calc(var(--u) * 17);
+  letter-spacing: -0.03em;
+}
+/* «Все рецепты.» — как кнопка trionn.com: буквы уезжают вправо, стрелка справа уходит, слева въезжает;
+   линия стирается вправо и дорисовывается слева (JS: задержки букв) */
+/* кнопка = последняя колонка модульной сетки (1200…1420 в --uw), как карточки рецептов */
+.rc__all {
+  right: var(--margin);
+  width: calc(var(--uw) * 220);
+  height: calc(var(--u) * 32);
+  color: var(--blue);
+  text-decoration: none;
+  overflow: hidden;
+}
+.rc__all-word {
+  position: absolute;
+  left: 0;
+  top: calc(var(--u) * -4.3);
+  display: inline-flex;
+  font-family: var(--serif);
+  font-style: italic;
+  font-weight: 700;
+  font-size: calc(var(--u) * 22);     /* макет: Times 22, трекинг −3 % */
+  letter-spacing: -0.03em;
+  line-height: 1;
+  white-space: pre;
+}
+.rc__all .ch { display: inline-block; transition: transform var(--dur, 300ms) ease var(--delay, 0ms); }
+.rc__all.is-hovered .ch { transform: translateX(var(--move, 0px)); }
+.rc__all-arrow {
+  position: absolute;
+  top: calc(var(--u) * 1);
+  width: calc(var(--u) * 18);
+  height: calc(var(--u) * 16);
+}
+.rc__all-arrow--right { right: calc(var(--u) * -0.5); }
+.rc__all-arrow--left { left: 0; opacity: 0; transform: translateX(-120%); }
+.rc__all-arrow svg { display: block; width: 100%; height: 100%; overflow: visible; }
+.rc__all-arrow path { fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: square; }
+.rc__all-line {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: calc(var(--u) * 1.5);
+  background: currentColor;
+}
+.rc__all-line--right { transform-origin: right center; }
+.rc__all-line--left { transform-origin: left center; transform: scaleX(0); }
+.rc__all:focus-visible { outline: calc(var(--u) * 2) solid var(--blue); outline-offset: calc(var(--u) * 4); }
+
+/* ---------- Окно рецепта: «Карточка экспоната» (js/recipe-modal.js) ---------- */
+
+/* слева — фото на всю высоту (летит из карточки сетки), справа — белая панель; фоновые линии — верхним слоем на всё окно */
+.rm {
+  position: fixed;
+  inset: 0;
+  z-index: 400;
+  visibility: hidden;
+  pointer-events: none;
+  color: var(--black);
+}
+.rm.is-open { visibility: visible; pointer-events: auto; }
+.rm__photo {
+  position: fixed;
+  overflow: hidden;
+  background: #0c0c0c;
+  cursor: zoom-out;
+  will-change: left, top, width, height;
+}
+.rm__photo img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  max-width: none;
+  object-fit: cover;
+  will-change: transform;
+}
+.rm__panel {
+  position: fixed;
+  left: 50vw;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  background: #fff;
+}
+/* линии сайта поверх всего окна (и фото): SVG инвертирован в белый, режим «разница» — на белом выходят тёмные
+   (как фон сайта: 13 % уже внутри SVG), на фото — светлые */
+.rm__lines {
+  position: fixed;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  max-width: none;
+  object-fit: cover;
+  filter: invert(1);
+  mix-blend-mode: difference;
+  pointer-events: none;
+}
+/* кадр 800 по высоте, по центру; по ширине — колонки 4–6 сетки макета (728…1420 в --uw) */
+.rm__box {
+  position: absolute;
+  left: calc(var(--uw) * 8);
+  right: var(--margin);
+  top: calc((100vh - var(--u) * 800) / 2);
+  height: calc(var(--u) * 800);
+}
+/* строка, выкатывающаяся снизу */
+.rm__ln { display: block; overflow: hidden; padding: 0.1em 0 0.14em; margin: -0.1em 0 -0.14em; }
+.rm__in { display: block; will-change: transform; }
+
+.rm__top {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: calc(var(--u) * 34);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.rm__num {
+  font-family: var(--serif);
+  font-weight: 700;
+  font-size: calc(var(--u) * 13.7);
+  line-height: 1;
+}
+.rm__close {
+  display: flex;
+  align-items: center;
+  gap: calc(var(--u) * 10);
+  padding: 0;
+  border: 0;
+  background: none;
+  color: inherit;
+  font-family: var(--serif);
+  font-size: calc(var(--u) * 16.5);
+  line-height: 1;
+  cursor: pointer;
+}
+.rm__x { position: relative; width: calc(var(--u) * 16); height: calc(var(--u) * 16); transition: rotate 0.5s cubic-bezier(.2, .8, .2, 1); }
+.rm__x::before,
+.rm__x::after {
+  content: '';
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: calc(var(--u) * 20);
+  height: calc(var(--u) * 1.5);
+  background: currentColor;
+  translate: -50% -50%;
+  rotate: 45deg;
+}
+.rm__x::after { rotate: -45deg; }
+.rm__close:hover .rm__x,
+.rm__close:focus-visible .rm__x { rotate: 90deg; }
+.rm__close:focus-visible { outline: calc(var(--u) * 2) solid var(--blue); outline-offset: calc(var(--u) * 6); }
+.rm__rule {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: calc(var(--u) * 66);
+  height: calc(var(--u) * 1.5);
+  background: currentColor;
+}
+/* рамка с текстом (как белая рамка в лукбуке; здесь чёрная): колонки 4–6, от 86 до 780, отступ внутри 28 */
+.rm__frame {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: calc(var(--u) * 86);
+  bottom: calc(var(--u) * 20);
+  border: calc(var(--u) * 2) solid currentColor;
+}
+.rm__name {
+  position: absolute;
+  left: calc(var(--u) * 28);
+  top: calc(var(--u) * 32);
+  margin: 0;
+  font-family: var(--display);
+  font-weight: 700;
+  font-size: calc(var(--u) * 96);
+  line-height: 0.8;
+}
+.rm__caption {
+  position: absolute;
+  left: calc(var(--u) * 28);
+  top: calc(var(--u) * 124);
+  width: calc(var(--uw) * 560);
+  margin: 0;
+  font-family: var(--serif);
+  font-style: italic;
+  font-size: calc(var(--u) * 24);
+  line-height: calc(var(--u) * 27);
+}
+
+/* композиция из трёх частей: «Состав» и «Приготовление» — две равные половины рамки (промежуток 40),
+   под ними на всю ширину рамки — КБЖУ */
+.rm__col { position: absolute; top: calc(var(--u) * 212); width: calc((100% - var(--u) * (56 + 40)) / 2); }
+.rm__col--a { left: calc(var(--u) * 28); }
+.rm__col--b { right: calc(var(--u) * 28); }
+.rm__head {
+  margin: 0 0 calc(var(--u) * 16);
+  font-family: var(--serif);
+  font-weight: 700;
+  font-size: calc(var(--u) * 13.7);
+  line-height: 1;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  opacity: 0.45;
+}
+.rm__list,
+.rm__steps,
+.rm__facts { margin: 0; padding: 0; list-style: none; }
+/* общий шаг строк 30 у «Состава» и «Приготовления»: строки обеих колонок стоят на одних линиях
+   (перенос длинного шага — тоже по шагу 30) */
+.rm__list li { height: calc(var(--u) * 30); }
+.rm__steps li { min-height: calc(var(--u) * 30); }
+/* flow-root: отрицательные поля окна строки (.rm__ln) не схлопываются с пунктом — иначе шаг «плывёт» */
+.rm__list li,
+.rm__steps li { display: flow-root; }
+.rm__row .rm__in,
+.rm__fact .rm__in { display: flex; align-items: baseline; }
+.rm__lab,
+.rm__amt,
+.rm__step {
+  font-family: var(--serif);
+  font-size: calc(var(--u) * 17);
+  line-height: calc(var(--u) * 30);
+  white-space: nowrap;
+}
+.rm__dots {
+  flex: 1;
+  align-self: baseline;
+  height: calc(var(--u) * 3);
+  margin: 0 calc(var(--u) * 4);
+  background: radial-gradient(circle, currentColor 45%, transparent 55%) left bottom / calc(var(--u) * 4.5) calc(var(--u) * 3) repeat-x;
+}
+.rm__step .rm__in { display: grid; grid-template-columns: calc(var(--u) * 38) 1fr; }
+.rm__step { white-space: normal; }
+.rm__rn { font-weight: 700; }
+
+/* КБЖУ — как в лукбуке: значение (Bebas) — отточие — подпись, на всю ширину рамки;
+   заголовок — рукописное «КБЖУ» (чёрным) */
+.rm__kb {
+  position: absolute;
+  left: calc(var(--u) * 28);
+  right: calc(var(--u) * 28);
+  top: calc(var(--u) * 420);
+}
+.rm__kbzhu {
+  display: block;
+  width: calc(var(--u) * 54);
+  height: auto;
+  margin-bottom: calc(var(--u) * 14);
+  overflow: visible;
+  filter: brightness(0);
+}
+.rm__kbzhu mask path { fill: none; stroke: #fff; stroke-width: 8; stroke-linecap: round; stroke-linejoin: round; }
+.rm__facts li { height: calc(var(--u) * var(--fact-h, 39)); }   /* --fact-h — плотнее, если рецепт длинный (JS) */
+.rm__val {
+  font-family: var(--display);
+  font-weight: 700;
+  font-size: calc(var(--u) * 36);
+  line-height: 1;
+  text-box: trim-both cap alphabetic;
+  white-space: nowrap;
+}
+.rm__klab {
+  font-family: var(--serif);
+  font-size: calc(var(--u) * 20.75);
+  line-height: 1;
+  white-space: nowrap;
+}
+.rm__note {
+  margin: calc(var(--u) * 6) 0 0;
+  font-family: var(--serif);
+  font-size: calc(var(--u) * 13.7);
+  line-height: 1;
+  opacity: 0.55;
+}
+
+/* ---------- Блок 5: Признание элитой (js/priznanie.js) ---------- */
+
+/* чёрный блок (вход — ровный стык обычным скроллом); экран стоит 8.6 экрана — PIN_S в priznanie.js */
+.pz {
+  position: relative;
+  z-index: 4;
+  color: var(--white);
+  background: #000;
+}
+.pz__pin { position: relative; height: 960vh; }
+.pz__stage {
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  overflow: clip;
+  background: #000;
+}
+/* сцена — под маской-аркой (размер и место маски — JS) */
+.pz__scene {
+  position: absolute;
+  inset: 0;
+  -webkit-mask-repeat: no-repeat;
+  mask-repeat: no-repeat;
+}
+.pz__canvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
+/* линии сетки сайта поверх всего (как на первом экране): белые, 13 % */
+.pz__lines {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  pointer-events: none;
+}
+/* рукописное «Awards» (макет start2): поверх арки, серо-синее, пишется пером по скроллу (JS) */
+.pz__awards {
+  position: absolute;
+  left: calc(50vw - var(--u) * 720 + var(--u) * 15.6);
+  top: calc(50vh - var(--u) * 400 + var(--u) * 11.3);
+  width: calc(var(--u) * 1410);
+  height: calc(var(--u) * 771);
+  overflow: visible;
+  pointer-events: none;
+}
+.pz__awards { z-index: 2; }
+
+/* тексты: по горизонтали — колонки сетки экрана (--uw, поле --margin, как хедер и остальные блоки),
+   по вертикали — кадр 800 по центру (--u) */
+.pz__frame {
+  position: absolute;
+  left: 0;
+  top: calc(50vh - var(--u) * 400);
+  width: 100%;
+  height: calc(var(--u) * 800);
+  pointer-events: none;
+}
+/* строки — колонкой (flex): отрицательные поля окон строк не схлопываются, шаг строк — ровно line-height */
+.pz__jury, .pz__sub, .pz__desc, .pz__cap { display: flex; flex-direction: column; }
+.pz__ln { display: block; overflow: hidden; padding: 0.12em 0 0.16em; margin: -0.12em 0 -0.16em; }
+.pz__in { display: block; will-change: transform; }
+/* «Подтверждено жюри.» — по макету Bebas 93 / 0,8 (строки через 74), базовые линии 235 и 309 */
+.pz__jury {
+  position: absolute;
+  left: var(--margin);
+  top: calc(var(--u) * 164.3);
+  margin: 0;
+  font-family: var(--display);
+  font-weight: 700;
+  font-size: calc(var(--u) * 93);
+  line-height: 0.8;
+}
+/* подзаголовок — по макету Times 39 / 37, трекинг −3 %, колонка 2 (256), базовая линия первой строки — 340.9 */
+.pz__sub {
+  position: absolute;
+  left: calc(var(--uw) * 256);
+  top: calc(var(--u) * 309.2);
+  margin: 0;
+  font-family: var(--serif);
+  font-size: calc(var(--u) * 39);
+  line-height: calc(var(--u) * 37);
+  letter-spacing: -0.03em;
+}
+/* описание — по макету Times 22 / 21, трекинг −3 %, колонка 5 (964), базовая линия первой строки — 672.1 */
+.pz__desc {
+  position: absolute;
+  left: calc(var(--uw) * 964);
+  top: calc(var(--u) * 654.2);
+  margin: 0;
+  font-family: var(--serif);
+  font-size: calc(var(--u) * 22);
+  line-height: calc(var(--u) * 21);
+  letter-spacing: -0.03em;
+  white-space: nowrap;
+}
+/* финал (макет final): подписи под медалями — по макету Times 18 / 17, трекинг −3 %, по центру, базовые линии 677 / 694 / 711;
+   звёздочка между ними */
+.pz__cap {
+  position: absolute;
+  top: calc(var(--u) * 662.6);
+  width: calc(var(--u) * 300);
+  margin: 0 0 0 calc(var(--u) * -150);
+  font-family: var(--serif);
+  font-size: calc(var(--u) * 18);
+  line-height: calc(var(--u) * 17);
+  letter-spacing: -0.03em;
+  text-align: center;
+}
+/* подписи и звёздочка — у медалей: от центра экрана в --u (как кадр с медалями) */
+.pz__cap--l { left: calc(50vw + var(--u) * (602.3 - 720)); }
+.pz__cap--r { left: calc(50vw + var(--u) * (838.3 - 720)); }
+.pz__star {
+  position: absolute;
+  left: calc(50vw + var(--u) * 0.7);
+  top: calc(var(--u) * 642.7);
+  font-size: calc(var(--u) * 17);
+  line-height: 1;
+  translate: -50% -50%;
+  opacity: 0;
+  scale: 0.4;
+  transition: opacity 0.6s ease, scale 0.8s cubic-bezier(.2, .8, .2, 1);
+}
+.pz__caps.is-in .pz__star { opacity: 1; scale: 1; }
+
+/* ---------- Блок 6: Финал (js/final.js; макеты design/6 блок/финал/06-final1…4) ---------- */
+/* Блок только держит высоту прокрутки; всё видимое — в фиксированной сцене поверх блока 5 (вход — прожигом на канвасе) */
+.fin {
+  position: relative;
+  z-index: 6;
+}
+.fin__stage {
+  position: fixed;
+  inset: 0;
+  visibility: hidden;
+  pointer-events: none;
+  overflow: clip;
+}
+.fin__stage.is-on { visibility: visible; }
+.fin__gl { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
+
+/* строки, выкатывающиеся снизу (как в блоках 4 и 5): колонкой, шаг — ровно line-height */
+.fin [data-lines] { display: flex; flex-direction: column; align-items: center; margin: 0; }
+.fin__ln { display: block; overflow: hidden; padding: 0.14em 0.06em 0.18em; margin: -0.14em -0.06em -0.18em; }
+.fin__in { display: block; white-space: nowrap; will-change: transform; }
+
+/* кадр 1440×800 по центру экрана (--u), как положение фигур на канвасе */
+.fin__frame,
+.fin__center {
+  position: absolute;
+  left: calc(50vw - var(--u) * 720);
+  top: calc(50vh - var(--u) * 400);
+  width: calc(var(--u) * 1440);
+  height: calc(var(--u) * 800);
+}
+/* рамка — колонки 3–4 (492…948), 190…611, белый контур 2; прорисовывается линией */
+.fin__box {
+  position: absolute;
+  left: calc(var(--u) * 492);
+  top: calc(var(--u) * 190);
+  width: calc(var(--u) * 456);
+  height: calc(var(--u) * 421);
+  overflow: visible;
+}
+.fin__box rect {
+  fill: none;
+  stroke: var(--white);
+  stroke-width: 2;
+  stroke-dasharray: 1;
+  stroke-dashoffset: 1;
+}
+/* фраза — Bebas 36.5, строки через 28.5, по центру; базовая линия первой строки — 367.5 */
+.fin__phrase {
+  position: absolute;
+  left: 0;
+  width: 100%;
+  top: calc(var(--u) * 340.2);
+  color: var(--white);
+  font-family: var(--display);
+  font-weight: 700;
+  font-size: calc(var(--u) * 36);       /* макет: Bebas 36 / 29, базовые линии 367 / 396 / 425 */
+  line-height: calc(var(--u) * 29);
+}
+/* «Остальное мифы.» — по макету Times курсив 22, трекинг −3 %, базовая линия — 455.1 */
+.fin__myth {
+  position: absolute;
+  left: 0;
+  width: 100%;
+  top: calc(var(--u) * 436.6);
+  color: var(--white);
+  font-family: var(--serif);
+  font-style: italic;
+  font-size: calc(var(--u) * 22);
+  line-height: calc(var(--u) * 22);
+  letter-spacing: -0.03em;
+}
+
+/* белый экран: тексты по центру кадра, карточка и ссылка — у полей экрана по низу кадра */
+.fin__white { position: absolute; inset: 0; color: var(--black); visibility: hidden; }
+.fin__white.is-live { visibility: visible; }
+.fin__center > * { position: absolute; left: 0; width: 100%; }
+/* тексты открываются вместе с белым облаком вспышки: круг от точки касания (радиусы — JS) */
+.fin__center {
+  -webkit-mask-image: radial-gradient(circle at var(--fx, 50%) var(--fy, 50%), #000 var(--r0, 0px), transparent var(--r1, 0px));
+  mask-image: radial-gradient(circle at var(--fx, 50%) var(--fy, 50%), #000 var(--r0, 0px), transparent var(--r1, 0px));
+}
+.fin__center.is-full { -webkit-mask-image: none; mask-image: none; }
+/* «TEOS.» (синий) / «Греческий йогурт.» — Bebas 99, строки через 78; базовая линия «TEOS.» — 275 */
+/* по макету: Bebas 96 / 0,8 (строки через 76.8), базовые линии 274.8 и 351 */
+.fin__title {
+  top: calc(var(--u) * 201.6);
+  font-family: var(--display);
+  font-weight: 700;
+  font-size: calc(var(--u) * 96);
+  line-height: 0.8;
+}
+.fin__teos { color: var(--blue); }
+/* подзаголовок — по макету Times 35, трекинг −3 %, строки через 41.8; базовая линия первой строки — 403.1 */
+.fin__lead {
+  top: calc(var(--u) * 370.5);
+  font-family: var(--serif);
+  font-size: calc(var(--u) * 35);
+  line-height: calc(var(--u) * 41.8);
+  letter-spacing: -0.03em;
+}
+.fin__lead b { font-style: italic; }
+/* дисклеймер — по макету Times 18 / 17, трекинг −3 %; базовые линии 529 / 546 / 563, английская строка — 597 */
+.fin__note,
+.fin__en {
+  font-family: var(--serif);
+  font-size: calc(var(--u) * 18);
+  line-height: calc(var(--u) * 17);
+  letter-spacing: -0.03em;
+}
+.fin__note { top: calc(var(--u) * 514.6); }
+.fin__en { top: calc(var(--u) * 582.3); }
+
+/* карточка автора: колонка 1 (220 × 266), низ — 780 */
+.fin__card {
+  position: absolute;
+  left: var(--margin);
+  bottom: calc(50vh - var(--u) * 400 + var(--u) * 20);
+  width: calc(var(--u) * 220);
+  height: calc(var(--u) * 266);
+}
+.fin__card-rect { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; }
+.fin__card-rect rect {
+  fill: none;
+  stroke: var(--blue);
+  stroke-width: 2;
+  stroke-dasharray: 1;
+  stroke-dashoffset: 1;
+}
+/* плашки (макет 06-final4 (2)): по сторонам от портрета на высоте шеи, y 619…631.5; крупнее исходных SVG в 1.78 раза */
+.fin__tag { position: absolute; top: calc(var(--u) * 105); height: auto; display: block; }
+.fin__tag--tg { left: calc(var(--u) * 10); width: calc(var(--u) * 37.4); }
+.fin__tag--copy { right: calc(var(--u) * 10.1); width: calc(var(--u) * 55.2); }
+/* подпись от руки — крупная (×1.337), выходит за верх рамки; поверх линии рамки, под портретом */
+.fin__sign {
+  position: absolute;
+  left: calc(var(--u) * 6.2);
+  top: calc(var(--u) * -87.8);
+  width: calc(var(--u) * 211.2);
+  height: calc(var(--u) * 185.8);
+  overflow: visible;
+}
+/* портрет: выезжает снизу из-за нижней линии рамки */
+.fin__photo {
+  position: absolute;
+  left: calc(var(--u) * 23.2);
+  top: calc(var(--u) * 50);
+  width: calc(var(--u) * 173.6);
+  height: calc(var(--u) * 215);
+  overflow: hidden;
+}
+.fin__photo img { display: block; width: 100%; height: auto; will-change: transform; }
+.fin__seal {
+  position: absolute;
+  left: calc(var(--u) * 94.5);
+  top: calc(var(--u) * 200);
+  width: calc(var(--u) * 35);
+  height: auto;
+}
+
+/* ссылка на автора: колонка 6 (220), строки Times жирный курсив 20.7 через 21, стрелка справа, линия по низу (780).
+   Наведение — как у «Все рецепты.» (initAllButton в recepty.js): буквы уезжают вправо, стрелка справа уходит, слева въезжает,
+   линия стирается вправо и дорисовывается слева */
+.fin__author {
+  position: absolute;
+  right: var(--margin);
+  bottom: calc(50vh - var(--u) * 400 + var(--u) * 20);
+  width: calc(var(--u) * 220);
+  height: calc(var(--u) * 57);
+  color: var(--blue);
+  text-decoration: none;
+  overflow: hidden;
+}
+.fin__white.is-on .fin__author { pointer-events: auto; }
+.fin__author-text {
+  position: absolute;
+  left: 0;
+  top: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  font-family: var(--serif);
+  font-style: italic;
+  font-weight: 700;
+  font-size: calc(var(--u) * 22);     /* как «Все рецепты.»: Times 22, трекинг −3 % */
+  letter-spacing: -0.03em;
+  line-height: calc(var(--u) * 21);
+}
+.fin__author-word { display: inline-flex; white-space: pre; }
+.fin__author .ch { display: inline-block; transition: transform var(--dur, 300ms) ease var(--delay, 0ms); }
+.fin__author.is-hovered .ch { transform: translateX(var(--move, 0px)); }
+.fin__author-arrow {
+  position: absolute;
+  top: calc(var(--u) * 2.5);
+  width: calc(var(--u) * 18);
+  height: calc(var(--u) * 16);
+}
+.fin__author-arrow--right { right: calc(var(--u) * -0.5); }
+.fin__author-arrow--left { left: 0; opacity: 0; transform: translateX(-120%); }
+.fin__author-arrow svg { display: block; width: 100%; height: 100%; overflow: visible; }
+.fin__author-arrow path { fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: square; }
+.fin__author-line {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: calc(var(--u) * 2);
+  background: currentColor;
+}
+.fin__author-line--right { transform-origin: right center; }
+.fin__author-line--left { transform-origin: left center; transform: scaleX(0); }
+.fin__author:focus-visible { outline: calc(var(--u) * 2) solid var(--blue); outline-offset: calc(var(--u) * -3); }
+
+/* Отладка: ?debug */
+.debug-hud {
+  position: fixed;
+  right: 8px;
+  bottom: 8px;
+  z-index: 200;
+  padding: 6px 8px;
+  font: 11px/1.4 ui-monospace, Menlo, monospace;
+  color: #0f0;
+  background: rgb(0 0 0 / 0.7);
+  pointer-events: none;
+  white-space: pre;
+}

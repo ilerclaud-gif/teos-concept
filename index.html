@@ -1,0 +1,383 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>TEOS — Греческий йогурт. Concept</title>
+  <meta name="description" content="Неофициальный дизайн-концепт промо-сайта греческого йогурта TEOS.">
+  <meta name="theme-color" content="#030303">
+  <link rel="icon" href="favicon.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="apple-touch-icon.png">
+  <!-- превью ссылки (Telegram, WhatsApp, соцсети): адрес подставляется при публикации (tools/set-site-url.sh) -->
+  <meta property="og:type" content="website">
+  <meta property="og:locale" content="ru_RU">
+  <meta property="og:title" content="TEOS — Греческий йогурт. Concept">
+  <meta property="og:description" content="Неофициальный дизайн-концепт промо-сайта греческого йогурта TEOS. Автор — Илларион Ершов.">
+  <meta property="og:url" content="https://ilerclaud-gif.github.io/teos-concept/">
+  <meta property="og:image" content="https://ilerclaud-gif.github.io/teos-concept/img/og.jpg">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="666">
+  <meta name="twitter:card" content="summary_large_image">
+  <link rel="stylesheet" href="fonts/tinos.css">
+  <link rel="preload" href="fonts/BebasNeuePro-Regular.ttf" as="font" type="font/ttf" crossorigin>
+  <link rel="preload" href="fonts/BebasNeuePro-Bold.ttf" as="font" type="font/ttf" crossorigin>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body class="is-loading">
+
+  <!-- Прелоадер: контур рамки = прогресс загрузки (ширина колонки × золотое сечение) -->
+  <div class="loader" aria-hidden="true">
+    <div class="loader__frame">
+      <svg class="loader__rect" viewBox="0 0 220 356" preserveAspectRatio="none">
+        <rect x="0.5" y="0.5" width="219" height="355" pathLength="1"/>
+      </svg>
+      <div class="loader__word">TEOS</div>
+      <div class="loader__count">000</div>
+    </div>
+  </div>
+
+  <!-- Общий хедер сайта: на тёмных блоках белый, на светлых тёмный (--ink) -->
+  <header class="hdr">
+    <span class="hdr__rule hdr__rule--thick"></span>
+    <span class="hdr__rule hdr__rule--thin"></span>
+    <span class="hdr__rule hdr__rule--bottom"></span>
+    <a class="hdr__logo" href="#hero" aria-label="TEOS"><img src="img/logo.svg" alt="TEOS"></a>
+    <p class="hdr__kind">Греческий<br>йогурт</p>
+    <p class="hdr__vol"><b>Vol. 01.</b><br>Concept 2026</p>
+    <img class="hdr__badges" src="img/badges.png" alt="">
+    <button class="hdr__menu" type="button" aria-label="Меню"><img src="img/menu.svg" alt=""></button>
+  </header>
+
+  <!-- Фон светлых/цветных блоков и переходы между ними «прожигом» (js/bgfx.js) -->
+  <canvas class="bgfx" aria-hidden="true"></canvas>
+
+  <main>
+    <section class="hero" id="hero">
+      <div class="hero__stage">
+        <canvas class="hero__video" aria-hidden="true"></canvas>
+
+        <!-- Линии сетки (design/Линии сетки.svg), переписаны в обводки:
+             каждая рисуется сверху вниз, --d = задержка старта -->
+        <!-- тёмная сетка блока «Белок»: проявляется, когда погружение ушло в белое,
+             и совпадает с закреплённой сеткой блока 2 — стык без белого зазора -->
+        <img class="hero__grid-dark" src="img/grid-lines-dark.svg?v=3" alt="" aria-hidden="true">
+
+        <svg class="hero__grid" viewBox="0 0 1442 801" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
+          <path style="--d:0s"    d="M720 0V801" pathLength="1"/>
+          <path style="--d:.12s"  d="M484 0V801" pathLength="1"/>
+          <path style="--d:.18s"  d="M956 0V801" pathLength="1"/>
+          <path style="--d:.35s"  d="M1440.3 0.4L0.3 794.4" pathLength="1"/>
+          <path style="--d:.42s"  d="M0.8 0.4L1440.8 794.4" pathLength="1"/>
+          <path style="--d:.6s"   d="M1217.6 0.8C1171.3 295 1053.7 375 720.8 397.6C720.8 397.6 235.6 379.8 235.6 800.6" pathLength="1"/>
+          <path style="--d:.68s"  d="M235.6 0.8C281.8 295 399.4 375 732.4 397.6C732.4 397.6 1217.6 379.8 1217.6 800.6" pathLength="1"/>
+          <path style="--d:.9s"   d="M955.5 142.3H1183V267.3H955.5Z" pathLength="1"/>
+          <path style="--d:1.05s" d="M1095.5 142.3V190.6H1183" pathLength="1"/>
+          <path style="--d:1.15s" d="M1129.5 142.3V190.6" pathLength="1"/>
+          <path style="--d:1.2s"  d="M1096 172H1129.5" pathLength="1"/>
+          <path style="--d:1s"    d="M1183 267.3H1442" pathLength="1"/>
+        </svg>
+
+        <!-- Шаг 1: TEOS -->
+        <div class="title" aria-label="TEOS">
+          <span class="title__l"><span>T</span></span>
+          <span class="title__l"><span>E</span></span>
+          <span class="title__l"><span>O</span></span>
+          <span class="title__l"><span>S</span></span>
+        </div>
+
+        <!-- Передний слой: рука перед буквами (вырезка по яркости) -->
+        <canvas class="hero__front" aria-hidden="true"></canvas>
+
+        <!-- Искры при «разломе» статуи (шаг 3) -->
+        <canvas class="hero__sparks" aria-hidden="true"></canvas>
+
+        <div class="title-deco">
+          <div class="tag"><span class="tag__in">Тот самый</span></div>
+          <svg class="squiggle" viewBox="0 0 1121 448" aria-hidden="true">
+            <defs>
+              <mask id="squiggle-mask" maskUnits="userSpaceOnUse" x="0" y="0" width="1121" height="448">
+                <g fill="none" stroke="#fff" stroke-width="34" stroke-linecap="round" stroke-linejoin="round">
+                  <!-- T: перекладина -->
+                  <path d="M3 251 L60 214 L120 175 L178 136"/>
+                  <!-- T: ножка -->
+                  <path d="M53 196 L60 222 L120 325 L182 426"/>
+                  <!-- e + длинный хвост -->
+                  <path d="M204 268 L252 243 L306 210 L338 183 L365 152 L340 148 L300 165 L256 199 L208 244 L180 290 L170 318 L200 322 L260 315 L330 300 L400 281 L470 256 L530 231 L564 215"/>
+                  <!-- o: вертикальный штрих -->
+                  <path d="M461 112 L464 189 L469 239 L474 270"/>
+                  <!-- o: петля -->
+                  <path d="M556 326 L534 282 L512 239 L503 157 L500 51 L512 17 L531 10 L569 20 L612 51 L644 101 L656 145 L655 207 L644 282 L625 351 L600 395 L575 401 L537 389 L506 351 L490 301 L484 270"/>
+                  <!-- s: петля и финальный росчерк -->
+                  <path d="M772 25 L731 51 L690 92 L650 133 L612 176 L595 207 L603 220 L631 223 L681 220 L731 211 L800 199 L900 188 L1000 185 L1070 190 L1105 210 L1110 240 L1095 275 L1050 318 L990 360 L920 400 L870 425 L830 442"/>
+                </g>
+              </mask>
+            </defs>
+            <image href="img/squiggle.png" x="0" y="0" width="1121" height="448" mask="url(#squiggle-mask)"/>
+          </svg>
+        </div>
+
+        <!-- Шаг 2: облёт -->
+        <div class="plaque">
+          <p class="plaque__text">
+            <span class="line"><span>Греки <em>подарили миру</em></span></span>
+            <span class="line"><span>философию. Театр.</span></span>
+            <span class="line"><span>Олимпийские игры.</span></span>
+          </p>
+        </div>
+
+        <!-- Шаг 3: оживание -->
+        <h2 class="headline headline--awaken">
+          <span class="line"><span>И ещё</span></span>
+          <span class="line"><span>кое-что.</span></span>
+        </h2>
+
+        <!-- Шаг 4: баночка -->
+        <h2 class="headline headline--cup">
+          <span class="line"><span>Густой</span></span>
+          <span class="line"><span>греческий</span></span>
+          <span class="line"><span>йогурт.</span></span>
+        </h2>
+
+        <!-- Шаг 5: крупный план руки — блок в синей рамке -->
+        <aside class="deeper">
+          <div class="deeper__veil" aria-hidden="true"></div>
+          <!-- рамка из четырёх сторон: прорисовывается по кругу -->
+          <span class="deeper__edge deeper__edge--t" aria-hidden="true"></span>
+          <span class="deeper__edge deeper__edge--r" aria-hidden="true"></span>
+          <span class="deeper__edge deeper__edge--b" aria-hidden="true"></span>
+          <span class="deeper__edge deeper__edge--l" aria-hidden="true"></span>
+          <h2 class="deeper__title">
+            <span class="line"><span>Загляни</span></span>
+            <span class="line"><span>глубже.</span></span>
+          </h2>
+          <p class="deeper__sub">
+            <span class="line"><span>Греческий йогурт TEOS.</span></span>
+            <span class="line"><span>Натуральный 2%.</span></span>
+            <span class="line"><span>250 г</span></span>
+          </p>
+          <nav class="deeper__menu" aria-label="Разделы">
+            <a href="#belok"><span>Белок</span><i>I</i></a>
+            <a href="#vkusy"><span>Вкусы</span><i>II</i></a>
+            <a href="#recepty"><span>Рецепты</span><i>III</i></a>
+            <a href="#priznanie"><span>Признание элитой</span><i>IV</i></a>
+            <a href="#final"><span>∞ + ∞</span><i>V</i></a>
+          </nav>
+          <div class="deeper__hint" aria-hidden="true">
+            <span>Листай вниз, чтобы погрузиться.</span>
+            <img src="img/mouse.svg" alt="">
+          </div>
+          <!-- сюда JS кладёт копию закорючки (своя маска) -->
+        </aside>
+
+        <!-- Хедер -->
+
+        <div class="scroll-hint" aria-hidden="true">
+          <span class="scroll-hint__text">Листай вниз</span>
+          <img class="scroll-hint__mouse" src="img/mouse.svg" alt="">
+        </div>
+
+        <!-- кнопка первого экрана (макет 01-start2): сама пролистывает Hero до блока «Белок»; наведение — как у «Все рецепты.» -->
+        <a class="hero__more" href="#belok">
+          <span class="hero__more-word">Заглянуть глубже.</span>
+          <span class="hero__more-arrow hero__more-arrow--right" aria-hidden="true"><svg viewBox="0 0 18 16"><path d="M1 7.914H16M9.75 1.414L16 7.914L9.75 14.414"/></svg></span>
+          <span class="hero__more-arrow hero__more-arrow--left" aria-hidden="true"><svg viewBox="0 0 18 16"><path d="M1 7.914H16M9.75 1.414L16 7.914L9.75 14.414"/></svg></span>
+          <span class="hero__more-line hero__more-line--right" aria-hidden="true"></span>
+          <span class="hero__more-line hero__more-line--left" aria-hidden="true"></span>
+        </a>
+      </div>
+    </section>
+
+    <!-- Блок 2: Белок (макет design/2 блок/02-belok) -->
+    <section class="belok" id="belok">
+      <!-- фоновые линии стоят на месте, пока прокручивается весь блок -->
+      <div class="belok__lines" aria-hidden="true">
+        <img src="img/grid-lines-dark.svg?v=3" alt="">
+      </div>
+
+      <div class="belok__intro">
+        <!-- рисунок первого экрана: «Protein», бегущая строка, счётчик 8 (SVG в координатах макета 1440) -->
+        <svg class="belok__art" viewBox="0 0 1440 1150" aria-hidden="true">
+          <defs>
+            <!-- окно цифры счётчика -->
+            <clipPath id="eight-window" clipPathUnits="userSpaceOnUse">
+              <rect x="560" y="300" width="320" height="462"/>
+            </clipPath>
+            <!-- форма катушки счётчика: по ней вырезается белая копия бегущей строки -->
+            <clipPath id="eight-reel" clipPathUnits="userSpaceOnUse" class="eight-reel eight-reel--clip"></clipPath>
+          </defs>
+
+          <!-- «Protein» показан целиком, с лёгким параллаксом (едет чуть медленнее контента) -->
+          <image class="belok__protein" href="img/protein.webp" x="0" y="197" width="1440" height="945"/>
+          <g class="marquee marquee--ink"></g>
+          <g clip-path="url(#eight-window)"><g class="eight-reel eight-reel--ink"></g></g>
+          <g clip-path="url(#eight-window)">
+            <g clip-path="url(#eight-reel)"><g class="marquee marquee--paper"></g></g>
+          </g>
+        </svg>
+
+        <h2 class="belok__title">
+          <span class="line"><span>Статуи делают из мрамора.</span></span>
+          <span class="line"><span>Людей — из белка.</span></span>
+        </h2>
+      </div>
+
+      <div class="belok__args">
+        <aside class="belok__aside">
+          <p class="belok__note">Консистенция йогурта густая.<br>Плотная. Без компромиссов.</p>
+          <h2 class="belok__heading">5 аргументов<br>в пользу<br>белка.</h2>
+        </aside>
+        <ol class="belok__list">
+          <li><h3>I. Основа.</h3><p>Из белка строится каждая клетка.</p></li>
+          <li><h3>II. Защита.</h3><p>Из белка состоят антитела — опора иммунитета.</p></li>
+          <li><h3>III. Проводник.</h3><p>Доносит витамины и минералы туда,<br>где они нужны.</p></li>
+          <li><h3>IV. Полноценность.</h3><p>В молочном белке — все<br>незаменимые аминокислоты.</p></li>
+          <li><h3>V. Сила.</h3><p>Мышцы растут из белка.</p></li>
+        </ol>
+      </div>
+    </section>
+
+    <!-- Блок 3 «Вкусы» (синий; макеты design/3 блок/03-vkus, 03-vkus razlet). Фон рисует канвас .bgfx (прожиг из «Белка») -->
+    <section class="vkusy" id="vkusy">
+      <!-- фоновые линии: стоят на месте, поверх всего контента блока -->
+      <div class="vkusy__lines" aria-hidden="true"><img src="img/vkusy/lines.svg" alt=""></div>
+
+      <!-- вступление: голова статуи, в ней тесно от баночек; по скроллу всё разлетается -->
+      <div class="vkusy__intro">
+        <div class="vkusy__stage">
+          <!-- кадр макета (1440×1526): его положение по вертикали ведёт сценарий (JS) -->
+          <div class="vkusy__frame">
+          <h2 class="vkusy__title">
+            <span class="vkusy__word vkusy__word--1" data-split>Семь</span>
+            <span class="vkusy__word vkusy__word--2" data-split>характеров.</span>
+          </h2>
+          <p class="vkusy__sub" data-split>На Олимпе <em>стало тесно</em> и каждому вкусу<br>досталось своё имя.</p>
+          <!-- облака вокруг головы («На Олимпе стало тесно»): написаны маслом, медленно плывут влево-вправо; лежат за головой -->
+          <div class="vkusy__clouds" aria-hidden="true">
+            <img class="vkusy__cloud vkusy__cloud--1" src="img/vkusy/oblako-2.webp" alt="" loading="lazy">
+            <img class="vkusy__cloud vkusy__cloud--2" src="img/vkusy/oblako-1.webp" alt="" loading="lazy">
+            <img class="vkusy__cloud vkusy__cloud--3" src="img/vkusy/oblako-3.webp" alt="" loading="lazy">
+            <img class="vkusy__cloud vkusy__cloud--4" src="img/vkusy/oblako-3.webp" alt="" loading="lazy">
+          </div>
+          <img class="vkusy__head vkusy__head--back" src="img/vkusy/golova-zad.webp" alt="" aria-hidden="true">
+          <div class="vkusy__jars" aria-hidden="true"></div>
+          <img class="vkusy__head vkusy__head--front" src="img/vkusy/golova-pered.webp" alt="Мраморная голова статуи, полная баночек греческого йогурта TEOS">
+          <!-- когда баночки разлетелись, голова «отклеивается», как наклейка (WebGL) -->
+          <canvas class="vkusy__peel" aria-hidden="true"></canvas>
+          </div>
+        </div>
+      </div>
+      <!-- лукбук «Семь характеров»: карточки, фото и фразы строит js/lookbook.js -->
+      <div class="lb">
+        <div class="lb__photos" aria-hidden="true"></div>
+        <div class="lb__cards"></div>
+        <div class="lb__phrases" aria-hidden="true"></div>
+      </div>
+    </section>
+
+    <!-- Блок 4 «Рецепты» (макеты design/4 блок/04-recepty 1–4, механика trionn.com «Design in motion»).
+         Белый фон с сеткой рисует канвас .bgfx (прожиг поверх лукбука). Сцену строит js/recepty.js -->
+    <section class="rc" id="recepty">
+      <div class="rc__pin">
+        <div class="rc__stage">
+          <div class="rc__frame">
+            <h2 class="rc__title">
+              <span class="rc__line rc__line--1">С чем ещё смешать</span>
+              <span class="rc__line rc__line--2">греческий йогурт?</span>
+            </h2>
+            <p class="rc__sub">Со всем,<br>с чем хочешь!</p>
+          </div>
+          <canvas class="rc__gl" aria-hidden="true"></canvas>
+          <div class="rc__frame rc__frame--ui">
+            <ul class="rc__grid"></ul>
+            <div class="rc__hint" aria-hidden="true">
+              <span class="rc__hand"><img src="img/recepty/hand.png" alt=""></span>
+              <p>Кликай на нужный рецепт,<br>чтобы узнать состав.</p>
+            </div>
+          </div>
+          <p class="rc__desc">Мы честно пытались найти,<br>с чем греческий йогурт<br>не смешивается. Не нашли.<br>Вот девять доказательств<br>— от халвы до тирамису.</p>
+          <a class="rc__all" href="#" role="button">
+            <span class="rc__all-word">Все рецепты.</span>
+            <span class="rc__all-arrow rc__all-arrow--right" aria-hidden="true"><svg viewBox="0 0 18 16"><path d="M1 7.914H16M9.75 1.414L16 7.914L9.75 14.414"/></svg></span>
+            <span class="rc__all-arrow rc__all-arrow--left" aria-hidden="true"><svg viewBox="0 0 18 16"><path d="M1 7.914H16M9.75 1.414L16 7.914L9.75 14.414"/></svg></span>
+            <span class="rc__all-line rc__all-line--right" aria-hidden="true"></span>
+            <span class="rc__all-line rc__all-line--left" aria-hidden="true"></span>
+          </a>
+        </div>
+      </div>
+    </section>
+
+    <!-- Блок 5: Признание элитой (js/priznanie.js) -->
+    <section class="pz" id="priznanie">
+      <div class="pz__pin">
+        <div class="pz__stage">
+          <!-- сцена под маской-аркой: кадры клипов и неподвижные кадры рисуются на канвасе (js/priznanie.js) -->
+          <div class="pz__scene">
+            <canvas class="pz__canvas" role="img" aria-label="Витрина в античном зале: мраморный бюст в золотом лавровом венке с наградами Superior Taste Award и Crystal Taste Award; на постаменте высечено «Достойно Богов.»"></canvas>
+          </div>
+          <img class="pz__lines" src="img/grid-lines-light.svg" alt="" aria-hidden="true">
+          <div class="pz__frame">
+            <div class="pz__texts">
+              <h3 class="pz__jury" data-lines="Подтверждено|жюри."></h3>
+              <p class="pz__sub" data-lines="Греческий|йогурт TEOS|попробовали|шеф-повара|Michelin|и Gault Millau."></p>
+              <p class="pz__desc" data-lines="На этой дегустации нет имён: жюри не видит|ни названия, ни страны, ни упаковки. Только вкус.|Шеф-повара Michelin и Gault Millau оценили|греческий йогурт TEOS в 91,2 балла и назвали|его исключительным. Три звезды из трёх, шесть|раз подряд."></p>
+            </div>
+            <div class="pz__caps">
+              <span class="pz__star" aria-hidden="true">✦</span>
+              <p class="pz__cap pz__cap--l" data-lines="Superior Taste|Award — три звезды из трёх,|шесть раз подряд."></p>
+              <p class="pz__cap pz__cap--r" data-lines="Crystal Taste|Award — за три года|подряд."></p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Блок 6: Финал (js/final.js). Сцена — фиксированный WebGL-канвас (небо, терраса, статуя, грек; вход — прожигом),
+         поверх — рамка с фразой; после вспышки — белый экран с текстами и карточкой автора -->
+    <section class="fin" id="final">
+      <div class="fin__stage" aria-hidden="false">
+        <canvas class="fin__gl" role="img" aria-label="Античная терраса на закате: мраморная статуя протягивает баночку греческого йогурта TEOS, живой грек с золотой ложкой тянется к ней — как в «Сотворении Адама»"></canvas>
+
+        <!-- рамка и фраза (макет 06-final1): кадр 1440×800 по центру -->
+        <div class="fin__frame">
+          <svg class="fin__box" viewBox="0 0 456 421" aria-hidden="true"><rect x="1" y="1" width="454" height="419" pathLength="1"/></svg>
+          <p class="fin__phrase" data-lines="Между|камнем и жизнью|— одна ложка."></p>
+          <p class="fin__myth" data-lines="Остальное мифы."></p>
+        </div>
+
+        <!-- белый экран (макет 06-final4) -->
+        <div class="fin__white">
+          <div class="fin__center">
+            <h2 class="fin__title" data-lines="<span class='fin__teos'>TEOS.</span>|Греческий йогурт."></h2>
+            <p class="fin__lead" data-lines="<b>Неофициальный концепт.</b> Сделан в творческом|порыве после одной съеденной баночки."></p>
+            <p class="fin__note" data-lines="Сайт некоммерческий и не связан|с брендом TEOS и ОАО «Савушкин продукт». Товарный знак|и упаковка принадлежат правообладателю."></p>
+            <p class="fin__en" lang="en" data-lines="Unofficial concept. Not affiliated with TEOS."></p>
+          </div>
+
+          <!-- карточка автора: рамка, плашки, подпись от руки (пишется), портрет, печать -->
+          <div class="fin__card">
+            <svg class="fin__card-rect" viewBox="0 0 220 266" aria-hidden="true"><rect x="1" y="1" width="218" height="264" pathLength="1"/></svg>
+            <img class="fin__tag fin__tag--tg" src="img/final/plashka-telegram.svg" alt="@illaarion">
+            <img class="fin__tag fin__tag--copy" src="img/final/plashka-copyright.svg" alt="© 2026. IEr">
+            <svg class="fin__sign" viewBox="0 0 158 139" aria-hidden="true"></svg>
+            <div class="fin__photo"><img src="img/final/avtor.webp" alt="Автор сайта Илларион Ершов в образе грека: с золотой ложкой и баночкой TEOS" loading="lazy"></div>
+            <img class="fin__seal" src="img/final/pechat.webp" alt="" loading="lazy">
+          </div>
+
+          <a class="fin__author" href="https://t.me/illaarion" target="_blank" rel="noopener">
+            <span class="fin__author-text"><span class="fin__author-word">Автор</span><span class="fin__author-word">— Илларион Ершов.</span></span>
+            <span class="fin__author-arrow fin__author-arrow--right" aria-hidden="true"><svg viewBox="0 0 18 16"><path d="M1 7.914H16M9.75 1.414L16 7.914L9.75 14.414"/></svg></span>
+            <span class="fin__author-arrow fin__author-arrow--left" aria-hidden="true"><svg viewBox="0 0 18 16"><path d="M1 7.914H16M9.75 1.414L16 7.914L9.75 14.414"/></svg></span>
+            <span class="fin__author-line fin__author-line--right" aria-hidden="true"></span>
+            <span class="fin__author-line fin__author-line--left" aria-hidden="true"></span>
+          </a>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <script src="vendor/gsap.min.js"></script>
+  <script src="vendor/ScrollTrigger.min.js"></script>
+  <script src="vendor/lenis.min.js"></script>
+  <script type="module" src="js/main.js"></script>
+</body>
+</html>

@@ -1,0 +1,60 @@
+{
+  "segments" : [
+    {
+      "count" : 121,
+      "fps" : 24,
+      "height" : 1067,
+      "name" : "rot1",
+      "width" : 1920
+    },
+    {
+      "count" : 92,
+      "fps" : 24,
+      "height" : 1067,
+      "name" : "rot2",
+      "width" : 1920
+    },
+    {
+      "count" : 121,
+      "fps" : 24,
+      "height" : 1067,
+      "name" : "rot3b",
+      "width" : 1920
+    },
+    {
+      "count" : 121,
+      "fps" : 24,
+      "height" : 1067,
+      "name" : "bridge",
+      "width" : 1920
+    },
+    {
+      "count" : 122,
+      "fps" : 24,
+      "height" : 1067,
+      "name" : "awaken",
+      "width" : 1920
+    },
+    {
+      "count" : 77,
+      "fps" : 24,
+      "height" : 1067,
+      "name" : "cup",
+      "width" : 1920
+    },
+    {
+      "count" : 121,
+      "fps" : 24,
+      "height" : 1067,
+      "name" : "push",
+      "width" : 1920
+    },
+    {
+      "count" : 121,
+      "fps" : 24,
+      "height" : 1067,
+      "name" : "dive",
+      "width" : 1920
+    }
+  ]
+}
